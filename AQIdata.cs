@@ -1,4 +1,4 @@
-﻿namespace WpfApp1
+﻿namespace AQI_Web_Bug
 {
 
     public class AQIdata
