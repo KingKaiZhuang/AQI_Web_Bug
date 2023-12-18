@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:AQI_Web_Bug"
+        xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
         mc:Ignorable="d"
         Title="空氣品質指標(AQI)" Height="800" Width="1200">
     <Grid>
@@ -35,6 +36,8 @@
 
         <TextBox x:Name="ContentTextBox" Grid.Row="1" Grid.Column="0" Background="#FFF8FAEC"/>
 
+        <GridSplitter Grid.Row="1" Grid.Column="1" Width="5" VerticalAlignment="Stretch"
+                    HorizontalAlignment="Center" Background="LightGray"/>
         <Grid Grid.Row="1" Grid.Column="2">
             <Grid.RowDefinitions>
                 <RowDefinition Height="300"/>
@@ -51,7 +54,11 @@
                 <WrapPanel Name="DataWrapPanel" Orientation="Horizontal" Margin="5,5,5,5"/>
             </Border>
             <Border Grid.Row="3" Margin="2,2,2,2" BorderBrush="Red" BorderThickness="1">
-                
+                <lvc:CartesianChart x:Name="AQIChart" MinWidth="500">
+                    <lvc:CartesianChart.AxisX>
+                        <lvc:Axis Title="數值"/>
+                    </lvc:CartesianChart.AxisX>
+                </lvc:CartesianChart>
             </Border>
         </Grid>
 

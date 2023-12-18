@@ -6,6 +6,8 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using LiveCharts;
+using LiveCharts.Wpf;
 
 namespace AQI_Web_Bug
 {
@@ -19,10 +21,12 @@ namespace AQI_Web_Bug
         List<Field> fields = new List<Field>();
         List<Record> records = new List<Record>();
         List<Record> selectedRecords = new List<Record>();
+        SeriesCollection seriesCollection = new SeriesCollection();
         public MainWindow()
         {
             InitializeComponent();
             UrlTextBox.Text = url;
+            seriesCollection.Clear();
         }
 
         private async void fetchButton_Click(object sender, RoutedEventArgs e)
@@ -62,8 +66,44 @@ namespace AQI_Web_Bug
                             FontSize = 14,
                             FontWeight = FontWeights.Bold
                         };
+                        cb.Checked += UpdateChart;
+                        cb.Unchecked += UpdateChart;
                         DataWrapPanel.Children.Add(cb);
                     }
+                }
+            }
+        }
+
+        private void UpdateChart(object sender, RoutedEventArgs e)
+        {
+            seriesCollection.Clear();
+
+            foreach (CheckBox cb in DataWrapPanel.Children)
+            {
+                if(cb.IsChecked == true)
+                {
+                    var tag = cb.Tag as string;
+                    ColumnSeries columnSeries = new ColumnSeries();
+                    ChartValues<double> values = new ChartValues<double>();
+                    List<String> labels = new List<String>();
+
+                    foreach (var record in selectedRecords)
+                    {
+                        var propertyInfo = typeof(Record).GetProperty(tag);
+                        if(propertyInfo != null )
+                        {
+                            string value = propertyInfo.GetValue(record) as string;
+                            if(double.TryParse(value, out double v))
+                            {
+                                values.Add(v);
+                                labels.Add(record.sitename);
+                            }
+                        }
+                    }
+                    columnSeries.Values = values;
+                    columnSeries.Title = tag;
+                    columnSeries.LabelPoint = point => $"{labels[(int)point.X]}: {point.Y.ToString()}"; ;
+                    seriesCollection.Add(columnSeries);
                 }
             }
         }
