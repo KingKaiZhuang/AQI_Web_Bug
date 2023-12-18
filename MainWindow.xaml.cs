@@ -65,7 +65,6 @@ namespace AQI_Web_Bug
                         DataWrapPanel.Children.Add(cb);
                     }
                 }
-
             }
         }
 
