@@ -17,7 +17,7 @@ namespace AQI_Web_Bug
     public partial class MainWindow : Window
     {
         string url = "https://data.moenv.gov.tw/api/v2/aqx_p_432?api_key=e8dd42e6-9b8b-43f8-991e-b3dee723a52d&limit=1000&sort=ImportDate%20desc&format=JSON";
-        AQIdata aqiData = new AQIdata();
+        AQIdata aqidata = new AQIdata();
         List<Field> fields = new List<Field>();
         List<Record> records = new List<Record>();
         List<Record> selectedRecords = new List<Record>();
@@ -26,21 +26,20 @@ namespace AQI_Web_Bug
         {
             InitializeComponent();
             UrlTextBox.Text = url;
-            seriesCollection.Clear();
+            selectedRecords.Clear();
         }
 
-        private async void fetchButton_Click(object sender, RoutedEventArgs e)
+        private async void GetWebDataButton_Click(object sender, RoutedEventArgs e)
         {
-            ContentTextBox.Text = "抓取資料...";
+            ContentTextBox.Text = "正在抓取網路資料...";
 
             string jsontext = await FetchContentAsync(url);
             ContentTextBox.Text = jsontext;
-            aqiData = JsonSerializer.Deserialize<AQIdata>(jsontext);
-            fields = aqiData.fields.ToList(); // 欄位名稱
-            records = aqiData.records.ToList(); // 內容
+            aqidata = JsonSerializer.Deserialize<AQIdata>(jsontext);
+            fields = aqidata.fields.ToList();
+            records = aqidata.records.ToList();
             selectedRecords = records;
-            statusTextBlock.Text = $"總共有 {records.Count} 筆資料";
-            // 接著要output到畫面上
+            StatusTextBlock.Text = $"共有 {records.Count} 筆資料";
             DisplayAQIData();
         }
 
@@ -52,7 +51,7 @@ namespace AQI_Web_Bug
             foreach (var field in fields)
             {
                 var propertyInfo = typeof(Record).GetProperty(field.id);
-                if (propertyInfo != null )
+                if (propertyInfo != null)
                 {
                     string value = propertyInfo.GetValue(records[0]) as string;
                     if (double.TryParse(value, out double v))
@@ -64,8 +63,9 @@ namespace AQI_Web_Bug
                             Margin = new Thickness(3),
                             Width = 120,
                             FontSize = 14,
-                            FontWeight = FontWeights.Bold
+                            FontWeight = FontWeights.Bold,
                         };
+
                         cb.Checked += UpdateChart;
                         cb.Unchecked += UpdateChart;
                         DataWrapPanel.Children.Add(cb);
@@ -80,9 +80,9 @@ namespace AQI_Web_Bug
 
             foreach (CheckBox cb in DataWrapPanel.Children)
             {
-                if(cb.IsChecked == true)
+                if (cb.IsChecked == true)
                 {
-                    var tag = cb.Tag as string;
+                    var tag = cb.Tag as String;
                     ColumnSeries columnSeries = new ColumnSeries();
                     ChartValues<double> values = new ChartValues<double>();
                     List<String> labels = new List<String>();
@@ -90,10 +90,10 @@ namespace AQI_Web_Bug
                     foreach (var record in selectedRecords)
                     {
                         var propertyInfo = typeof(Record).GetProperty(tag);
-                        if(propertyInfo != null )
+                        if (propertyInfo != null)
                         {
                             string value = propertyInfo.GetValue(record) as string;
-                            if(double.TryParse(value, out double v))
+                            if (double.TryParse(value, out double v))
                             {
                                 values.Add(v);
                                 labels.Add(record.sitename);
@@ -102,34 +102,37 @@ namespace AQI_Web_Bug
                     }
                     columnSeries.Values = values;
                     columnSeries.Title = tag;
-                    columnSeries.LabelPoint = point => $"{labels[(int)point.X]}: {point.Y.ToString()}"; ;
+                    columnSeries.LabelPoint = point => $"{labels[(int)point.X]}: {point.Y.ToString()}";
                     seriesCollection.Add(columnSeries);
                 }
             }
+            AQIChart.Series = seriesCollection;
         }
 
         private async Task<string> FetchContentAsync(string url)
         {
-            using (var client = new HttpClient())
+            try
             {
-                client.Timeout = TimeSpan.FromSeconds(200);
-                try
+                using (HttpClient client = new HttpClient())
                 {
                     return await client.GetStringAsync(url);
-                } catch(TaskCanceledException) {
-                    MessageBox.Show("請求超時或被取消");
-                    throw;
-                } catch(Exception ex)
-                {
-                    MessageBox.Show($"讀取數據時發生錯誤: {ex.Message}");
-                    throw;
                 }
+            }
+            catch (Exception ex)
+            {
+                return $"發生錯誤: {ex.Message}";
             }
         }
 
-        private void RecordDataGrid_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        private void RecordDataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            selectedRecords = RecordDataGrid.SelectedItems.Cast<Record>().ToList();
+            StatusTextBlock.Text = $"共選取 {selectedRecords.Count} 筆資料";
+        }
 
+        private void RecordDataGrid_LoadingRow(object sender, DataGridRowEventArgs e)
+        {
+            e.Row.Header = e.Row.GetIndex() + 1;
         }
     }
 }
