@@ -6,65 +6,115 @@
         xmlns:local="clr-namespace:AQI_Web_Bug"
         xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
         mc:Ignorable="d"
-        Title="空氣品質指標(AQI)" Height="800" Width="1200">
-    <Grid>
+        Title="空氣品質指標 (AQI)" Height="800" Width="1200"
+        Background="#F4F6F9" FontFamily="微軟正黑體">
+    <Window.Resources>
+        <!-- 陰影效果 -->
+        <DropShadowEffect x:Key="CardShadow" BlurRadius="10" ShadowDepth="2" Direction="270" Color="#888" Opacity="0.2"/>
+
+        <!-- 現代按鈕樣式 -->
+        <Style x:Key="ModernButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#3B82F6"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Padding" Value="10,5"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="6">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="20">
         <Grid.RowDefinitions>
-            <RowDefinition Height="80"/>
-            <RowDefinition Height="500*"/>
-            <RowDefinition Height="30"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="300*"/>
-            <ColumnDefinition Width="5"/>
-            <ColumnDefinition Width="500"/>
-        </Grid.ColumnDefinitions>
+        <!-- Header Card -->
+        <Border Grid.Row="0" Background="White" Padding="20" Margin="0,0,0,15"
+                CornerRadius="10" Effect="{StaticResource CardShadow}">
+            <DockPanel>
+                <StackPanel Orientation="Vertical" DockPanel.Dock="Left" Width="800">
+                    <TextBlock Text="每小時提供各測站之空氣品質指標(AQI)"
+                               FontSize="18" FontWeight="Bold" Margin="0,0,0,10"/>
+                    <!-- 模擬 Placeholder -->
+                    <Grid>
+                        <TextBox x:Name="UrlTextBox" Height="35" BorderBrush="#DDD" Background="#FAFAFA"/>
+                        <TextBlock Text="請輸入 AQI 資料網址"
+                                   Foreground="#999" Margin="5,0,0,0"
+                                   VerticalAlignment="Center" IsHitTestVisible="False"
+                                   x:Name="PlaceholderText" />
+                    </Grid>
+                </StackPanel>
+                <Button Content="抓取資料" x:Name="fetchButton" Width="120" Height="40" Margin="30,0,0,0"
+                        Style="{StaticResource ModernButtonStyle}" Click="GetWebDataButton_Click"/>
+            </DockPanel>
+        </Border>
 
-        <StackPanel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" 
-                    Orientation="Horizontal" Height="80" Width="auto">
-            <StackPanel Orientation="Vertical" Width="900">
-                <Label Content="每小時提供各測站之空氣品質指標(AQI)" Height="40"
-                       VerticalAlignment="Center" VerticalContentAlignment="Center"
-                        Margin="50,0,0,0"
-                       />
-                <TextBox x:Name="UrlTextBox" VerticalAlignment="Center" VerticalContentAlignment="Center"
-                         HorizontalAlignment="Left" Height="40" Width="800" TextWrapping="Wrap" Margin="50,0,0,0"/>
-            </StackPanel>
-            <Button Content="抓取資料" x:Name="fetchButton" VerticalAlignment="Center" 
-                    HorizontalAlignment="Left" Width="100" Height="50" Margin="80,0,0,0" Click="GetWebDataButton_Click"/>
-        </StackPanel>
+        <!-- Main Layout -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="3*"/>
+                <ColumnDefinition Width="10"/>
+                <ColumnDefinition Width="7*"/>
+            </Grid.ColumnDefinitions>
 
-        <TextBox x:Name="ContentTextBox" Grid.Row="1" Grid.Column="0" Background="#FFF8FAEC"/>
-
-        <GridSplitter Grid.Row="1" Grid.Column="1" Width="5" VerticalAlignment="Stretch"
-                    HorizontalAlignment="Center" Background="LightGray"/>
-        <Grid Grid.Row="1" Grid.Column="2">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="300"/>
-                <RowDefinition Height="5"/>
-                <RowDefinition Height="80"/>
-                <RowDefinition/>
-            </Grid.RowDefinitions>
-
-            <Border Grid.Row="0" Margin="2,2,2,2" BorderBrush="Red" BorderThickness="1">
-                <DataGrid x:Name="RecordDataGrid" AutoGenerateColumns="True" IsReadOnly="True" SelectionChanged="RecordDataGrid_SelectionChanged"/>
+            <!-- 左側 TextBox 卡片 -->
+            <Border Grid.Column="0" Background="White" Padding="10" CornerRadius="10"
+                    Effect="{StaticResource CardShadow}" Margin="0,0,10,0">
+                <TextBox x:Name="ContentTextBox" TextWrapping="Wrap"
+                         VerticalScrollBarVisibility="Auto" Background="#FAFAFA"/>
             </Border>
-            <GridSplitter Grid.Row="1" Height="5" HorizontalAlignment="Stretch" VerticalAlignment="Center" Background="LightGray"/>
-            <Border Grid.Row="2" Margin="2,2,2,2" BorderBrush="Red" BorderThickness="1">
-                <WrapPanel Name="DataWrapPanel" Orientation="Horizontal" Margin="5,5,5,5"/>
-            </Border>
-            <Border Grid.Row="3" Margin="2,2,2,2" BorderBrush="Red" BorderThickness="1">
-                <lvc:CartesianChart x:Name="AQIChart" MinWidth="500">
-                    <lvc:CartesianChart.AxisX>
-                        <lvc:Axis Title="數值"/>
-                    </lvc:CartesianChart.AxisX>
-                </lvc:CartesianChart>
-            </Border>
+
+            <!-- 右側內容 -->
+            <Grid Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="2*"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="3*"/>
+                </Grid.RowDefinitions>
+
+                <!-- DataGrid 卡片 -->
+                <Border Grid.Row="0" Background="White" Padding="10" CornerRadius="10"
+                        Margin="0,0,0,10" Effect="{StaticResource CardShadow}">
+                    <DataGrid x:Name="RecordDataGrid" AutoGenerateColumns="True" IsReadOnly="True"
+                              SelectionChanged="RecordDataGrid_SelectionChanged"
+                              BorderThickness="0" HeadersVisibility="Column"/>
+                </Border>
+
+                <!-- WrapPanel 卡片 -->
+                <Border Grid.Row="1" Background="White" Padding="10" CornerRadius="10"
+                        Margin="0,0,0,10" Effect="{StaticResource CardShadow}">
+                    <WrapPanel Name="DataWrapPanel" Orientation="Horizontal"/>
+                </Border>
+
+                <!-- 圖表卡片 -->
+                <Border Grid.Row="2" Grid.RowSpan="2" Background="White" Padding="10" CornerRadius="10"
+                        Effect="{StaticResource CardShadow}">
+                    <lvc:CartesianChart x:Name="AQIChart" MinHeight="200">
+                        <lvc:CartesianChart.AxisX>
+                            <lvc:Axis Title="數值"/>
+                        </lvc:CartesianChart.AxisX>
+                    </lvc:CartesianChart>
+                </Border>
+            </Grid>
         </Grid>
 
-        <StatusBar Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3">
+        <!-- 狀態列 -->
+        <StatusBar Grid.Row="2" Margin="0,20,0,0" Background="Transparent">
             <StatusBarItem>
-                <TextBlock x:Name="StatusTextBlock" Text="Status" Margin="100,0,0,0"/>
+                <TextBlock x:Name="StatusTextBlock" Text="狀態：等待操作"
+                           FontWeight="Medium" Foreground="#555"/>
             </StatusBarItem>
         </StatusBar>
     </Grid>
